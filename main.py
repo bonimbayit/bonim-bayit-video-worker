@@ -63,18 +63,17 @@ def ensure_cookies_file() -> Optional[str]:
     """Materialize YTDLP_COOKIES_B64 into a Netscape-format cookies file.
     Temporary fallback; can be replaced with a secret-mount later."""
     global _cookies_ready
-    b64 = os.environ.get("YTDLP_COOKIES_B64", "").strip()
-    if not b64:
+b64 = os.environ.get("YTDLP_COOKIES_B64", "").strip()
+if not b64:
+    return None
+b64 = "".join(b64.split())
+with _cookies_lock:
+    if _cookies_ready and os.path.exists(COOKIES_PATH):
+        return COOKIES_PATH
+    try:
+        data = base64.b64decode(b64)
+    except Exception:
         return None
-
-    with _cookies_lock:
-        if _cookies_ready and os.path.exists(COOKIES_PATH):
-            return COOKIES_PATH
-
-        try:
-            data = base64.b64decode(b64, validate=True)
-        except Exception:
-            return None
 
         fd, tmp = tempfile.mkstemp(prefix="ytc_", suffix=".txt", dir="/tmp")
         with os.fdopen(fd, "wb") as f:
