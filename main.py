@@ -16,7 +16,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException                                                                                                                                                           
-
+ 
 
   FRAMES_DIR = Path(os.environ.get("FRAMES_DIR", "/tmp/frames"))
   FRAMES_DIR.mkdir(parents=True, exist_ok=True)
