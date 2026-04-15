@@ -1,21 +1,21 @@
-import base64             
-  import hashlib
-  import os                                                                                                                                                                                                                                
-  import re
-  import shutil                                                                                                                                                                                                                            
-  import subprocess                                         
-  import tempfile
-  import threading
-  import time                                                                                                                                                                                                                              
-  import uuid
-  from pathlib import Path                                                                                                                                                                                                                 
-  from typing import List, Optional
-                                                                                                                                                                                                                                           
-  from fastapi import FastAPI                                                                                                                                                                                                              
-  from fastapi.responses import JSONResponse
-  from fastapi.staticfiles import StaticFiles                                                                                                                                                                                              
-  from pydantic import BaseModel, Field
-  from starlette.exceptions import HTTPException as StarletteHTTPException                                                                                                                                                                 
+import base64
+import hashlib
+import os
+import re
+import shutil
+import subprocess
+import tempfile
+import threading
+import time
+import uuid
+from pathlib import Path
+from typing import List, Optional
+
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+from starlette.exceptions import HTTPException as StarletteHTTPException                                                                                                                                                           
 
 
   FRAMES_DIR = Path(os.environ.get("FRAMES_DIR", "/tmp/frames"))
