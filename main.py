@@ -63,26 +63,38 @@ def ensure_cookies_file() -> Optional[str]:
     """Materialize YTDLP_COOKIES_B64 into a Netscape-format cookies file.
     Temporary fallback; can be replaced with a secret-mount later."""
     global _cookies_ready
-b64 = os.environ.get("YTDLP_COOKIES_B64", "").strip()
-if not b64:
-    return None
-b64 = "".join(b64.split())
-with _cookies_lock:
-    if _cookies_ready and os.path.exists(COOKIES_PATH):
-        return COOKIES_PATH
-    try:
-        data = base64.b64decode(b64)
-    except Exception:
+
+    b64 = os.environ.get("YTDLP_COOKIES_B64", "").strip()
+    if not b64:
         return None
 
-        fd, tmp = tempfile.mkstemp(prefix="ytc_", suffix=".txt", dir="/tmp")
-        with os.fdopen(fd, "wb") as f:
-            f.write(data)
+    # Remove accidental whitespace/newlines from pasted base64
+    b64 = "".join(b64.split())
 
-        os.chmod(tmp, 0o600)
-        os.replace(tmp, COOKIES_PATH)
-        _cookies_ready = True
-        return COOKIES_PATH
+    with _cookies_lock:
+        if _cookies_ready and os.path.exists(COOKIES_PATH):
+            return COOKIES_PATH
+
+        try:
+            data = base64.b64decode(b64)
+        except Exception:
+            return None
+
+        fd, tmp = tempfile.mkstemp(prefix="ytc_", suffix=".txt", dir="/tmp")
+        try:
+            with os.fdopen(fd, "wb") as f:
+                f.write(data)
+
+            os.chmod(tmp, 0o600)
+            os.replace(tmp, COOKIES_PATH)
+            _cookies_ready = True
+            return COOKIES_PATH
+        finally:
+            if os.path.exists(tmp):
+                try:
+                    os.remove(tmp)
+                except Exception:
+                    pass
 
 
 def _classify_ytdlp_error(stderr: str, stdout: str) -> Optional[dict]:
@@ -223,7 +235,10 @@ def sample_frames(
         if not convert_to_webp(jpg, webp_path):
             continue
 
-        jpg.unlink(missing_ok=True)
+        try:
+            jpg.unlink()
+        except Exception:
+            pass
 
         scored.append(
             {
@@ -305,7 +320,10 @@ def cleanup_old_jobs():
 
 @app.get("/health")
 def health():
-    return {"ok": True, "cookies": bool(os.environ.get("YTDLP_COOKIES_B64", "").strip())}
+    return {
+        "ok": True,
+        "cookies": bool(os.environ.get("YTDLP_COOKIES_B64", "").strip())
+    }
 
 
 @app.post("/extract")
